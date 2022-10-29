@@ -1,3 +1,4 @@
+using Example.App.Infrastructure;
 using Example.App.Logging;
 using Example.App.Metrics;
 using Example.App.Native;
@@ -14,11 +15,13 @@ public class NativeController : ControllerBase
 {
     private readonly CalculationUnit _unit;
     private readonly IScope _scope;
+    private readonly IDomainEventPublisher _eventPublisher;
 
-    public NativeController(CalculationUnit unit, IScope scope)
+    public NativeController(CalculationUnit unit, IScope scope, IDomainEventPublisher eventPublisher)
     {
         _unit = unit;
         _scope = scope;
+        _eventPublisher = eventPublisher;
     }
 
     public record CalculateInput(int? target);
@@ -33,7 +36,7 @@ public class NativeController : ControllerBase
         {
             await using var transaction = await Transaction<CalculationContext>.Begin(
                 createContext: _ => Task.FromResult(new CalculationContext(target)),
-                commitChanges: (_, _) => Task.CompletedTask,
+                commitChanges: (ctx, _) => _eventPublisher.Notify(ctx.Entities),
                 rollbackChanges: (_, _) => Task.CompletedTask,
                 ct: ct);
             var result = await _unit.DoCalculate(transaction.Context.Target);
