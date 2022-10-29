@@ -48,6 +48,7 @@ if (app.Environment.IsDevelopment())
 app.UseAuthorization();
 app.UseHttpLogging();
 app.UseMiddleware<LoggingMiddleware>();
+app.UseMiddleware<DataEnrichmentMiddleware>();
 
 app.MapControllers();
 
