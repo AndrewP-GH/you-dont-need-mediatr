@@ -15,11 +15,13 @@ public class DataEnrichmentMiddleware
 
     public async Task Invoke(HttpContext context)
     {
+        // Initialize the AsyncLocal's value ahead of time
+        var requestInfo = RequestInfo.Current;
+
         var request = context.Request;
         var platform = GetPlatform(request.Headers);
         var deviceId = GetDeviceId(request.Headers);
-        // Initialize the AsyncLocal's value ahead of time
-        var requestInfo = RequestInfo.Current;
+
         requestInfo.Set(platform, deviceId);
 
         await _next(context);
