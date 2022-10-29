@@ -34,23 +34,23 @@ public class DataEnrichmentMiddleware
         header.ContainsKey("platform")
             ? header["platform"].ToString()
             : string.Empty;
+}
 
-    public sealed class RequestInfo
+public sealed class RequestInfo
+{
+    private static readonly AsyncLocal<RequestInfo> AsyncLocal = new();
+    public static RequestInfo Current => AsyncLocal.Value ??= new();
+
+    [MemberNotNullWhen(false, nameof(Platform), nameof(DeviceId))]
+    public bool IsEmpty { get; private set; } = true;
+
+    public string? Platform { get; private set; }
+    public string? DeviceId { get; private set; }
+
+    public void Set(string platform, string deviceId)
     {
-        private static readonly AsyncLocal<RequestInfo> AsyncLocal = new();
-        public static RequestInfo Current => AsyncLocal.Value ??= new();
-
-        [MemberNotNullWhen(false, nameof(Platform), nameof(DeviceId))]
-        public bool IsEmpty { get; private set; } = true;
-
-        public string? Platform { get; private set; }
-        public string? DeviceId { get; private set; }
-
-        public void Set(string platform, string deviceId)
-        {
-            IsEmpty = false;
-            Platform = platform;
-            DeviceId = deviceId;
-        }
+        IsEmpty = false;
+        Platform = platform;
+        DeviceId = deviceId;
     }
 }
